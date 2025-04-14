@@ -1,0 +1,17 @@
+{
+  "name": "catalog-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.14.0",
+    "sequelize": "^6.x"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
