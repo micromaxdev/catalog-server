@@ -1,0 +1,33 @@
+name: Deploy to Ubuntu VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H catalog.int.micromax.com.au >> ~/.ssh/known_hosts
+
+      - name: SSH & Deploy
+        run: |
+          ssh dashdev@catalog.int.micromax.com.au << 'EOF'
+            cd ~/catalog-server
+            git pull origin main
+            cd frontend
+            npm install
+            npm run build
+            cd ..
+            pm2 restart catalog-server
+          EOF
