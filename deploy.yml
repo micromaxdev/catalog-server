@@ -20,7 +20,7 @@ jobs:
 
     - name: Deploy to Server
       run: |
-        ssh -o StrictHostKeyChecking=no dashdev@catalog.int.micromax.com.au << 'EOF'
+        ssh -o StrictHostKeyChecking=no -p 222 dashdev@catalog.int.micromax.com.au << 'EOF'
           cd ~/catalog-server
           git pull origin main
           npm install
