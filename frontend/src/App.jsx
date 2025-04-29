@@ -23,7 +23,9 @@ function App() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <pre style={{ background: "#f4f4f4", padding: "1rem" }}>
+        <pre
+          style={{ background: "#ffffff", padding: "1rem", color: "#000000" }}
+        >
           {JSON.stringify(products, null, 2)}
         </pre>
       )}
