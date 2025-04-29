@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import FilterDropdown from "./FilterDropdown";
+import { TextField, Box, Typography } from "@mui/material";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -69,34 +70,38 @@ function App() {
   };
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
-      <h1>Product Catalogue</h1>
+    <Box
+      sx={{
+        padding: "2rem",
+        fontFamily: "Arial, sans-serif",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Typography variant="h4" component="h1" sx={{ mb: 3 }}>
+        Product Catalogue
+      </Typography>
 
-      <div
-        style={{
-          marginBottom: "1rem",
+      <Box
+        sx={{
+          marginBottom: "2rem",
           display: "flex",
           flexDirection: "column",
           gap: "1rem",
           maxWidth: "400px",
         }}
       >
-        <input
-          type="text"
+        <TextField
+          fullWidth
           placeholder="Search by part number or description..."
           value={searchTerm}
           onChange={handleSearch}
-          style={{
-            padding: "0.5rem",
-            width: "100%",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            fontSize: "1rem",
-          }}
+          variant="outlined"
         />
 
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <div style={{ flex: 1 }}>
+        <Box sx={{ display: "flex", gap: "1rem" }}>
+          <Box sx={{ flex: 1 }}>
             <FilterDropdown
               label="Category"
               options={categories}
@@ -104,8 +109,8 @@ function App() {
               onChange={handleCategoryChange}
               placeholder="Select category..."
             />
-          </div>
-          <div style={{ flex: 1 }}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <FilterDropdown
               label="Subcategory"
               options={subcategories}
@@ -114,14 +119,21 @@ function App() {
               placeholder="Select subcategory..."
               disabled={!selectedCategory}
             />
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       {loading ? (
-        <p>Loading...</p>
+        <Typography>Loading...</Typography>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            flex: 1,
+          }}
+        >
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.part_number}
@@ -134,9 +146,9 @@ function App() {
               data_hash={product.data_hash}
             />
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
