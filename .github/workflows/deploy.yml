@@ -16,10 +16,16 @@ jobs:
       - name: Deploy to Server
         run: |
           cd ~/catalog-server
+          # Remove package-lock.json if it exists
+          rm -f package-lock.json
+          rm -f frontend/package-lock.json
+          # Reset any local changes
+          git reset --hard
           git pull origin main
-          yarn install
+          # Clean install with Yarn
+          yarn install --frozen-lockfile
           cd frontend
-          yarn install
+          yarn install --frozen-lockfile
           yarn build
           cd ..
           pm2 reload server.js --name catalog-server
