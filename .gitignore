@@ -29,4 +29,7 @@ dist-ssr
 
 # Package locks
 package-lock.json
-frontend/package-lock.json 
+frontend/package-lock.json
+# Keep yarn.lock files
+!yarn.lock
+!frontend/yarn.lock 

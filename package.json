@@ -5,9 +5,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently \"npm:server\" \"npm:client\"",
+    "dev": "concurrently \"yarn server\" \"yarn client\"",
     "server": "nodemon server.js",
-    "client": "cd frontend && npm run dev"
+    "client": "cd frontend && yarn dev",
+    "build": "cd frontend && yarn install --frozen-lockfile && yarn build"
   },
   "dependencies": {
     "dotenv": "^16.5.0",

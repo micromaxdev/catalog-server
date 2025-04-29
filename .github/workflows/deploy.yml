@@ -19,10 +19,10 @@ jobs:
           # Reset any local changes
           git reset --hard
           git pull origin main
-          # Clean install with Yarn
-          yarn install --frozen-lockfile
-          cd frontend
+
+          # Install dependencies and build
           yarn install --frozen-lockfile
           yarn build
-          cd ..
+
+          # Restart the application
           pm2 reload server.js --name catalog-server
