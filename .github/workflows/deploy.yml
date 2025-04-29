@@ -16,9 +16,6 @@ jobs:
       - name: Deploy to Server
         run: |
           cd ~/catalog-server
-          # Remove package-lock.json if it exists
-          rm -f package-lock.json
-          rm -f frontend/package-lock.json
           # Reset any local changes
           git reset --hard
           git pull origin main

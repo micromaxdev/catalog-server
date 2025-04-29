@@ -26,3 +26,7 @@ dist-ssr
 
 # Environment variables
 .env 
+
+# Package locks
+package-lock.json
+frontend/package-lock.json 
