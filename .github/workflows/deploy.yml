@@ -17,9 +17,9 @@ jobs:
         run: |
           cd ~/catalog-server
           git pull origin main
-          npm install
+          yarn install
           cd frontend
-          npm install
-          npm run build
+          yarn install
+          yarn build
           cd ..
           pm2 reload server.js --name catalog-server
