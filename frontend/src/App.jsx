@@ -80,7 +80,7 @@ function App() {
       }}
     >
       <Typography variant="h4" component="h1" sx={{ mb: 3 }}>
-        Product Catalogue
+        Product Catalog
       </Typography>
 
       <Box
