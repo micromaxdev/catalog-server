@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 const ProductCard = ({
-  part_number,
-  long_description,
+  model_number,
+  description,
   category,
   image_path,
   datasheet_path,
@@ -47,7 +47,7 @@ const ProductCard = ({
         {image_path && !imageError ? (
           <img
             src={image_path}
-            alt={part_number}
+            alt={model_number}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
             onError={() => setImageError(true)}
           />
@@ -85,7 +85,7 @@ const ProductCard = ({
               color: "#333",
             }}
           >
-            Part Number: {part_number}
+            Model Number: {model_number}
           </h3>
           <p
             style={{
@@ -94,7 +94,7 @@ const ProductCard = ({
               fontSize: "1rem",
             }}
           >
-            Description: {long_description}
+            Description: {description}
           </p>
           <p
             style={{

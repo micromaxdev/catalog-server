@@ -23,7 +23,7 @@ export const getAllProducts = async (req, res) => {
     }
 
     const [results] = await sequelize.query(
-      `SELECT * FROM products ${whereClause} LIMIT 100`,
+      `SELECT * FROM product ${whereClause} LIMIT 100`,
       { replacements }
     );
 

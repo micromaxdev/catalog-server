@@ -58,8 +58,8 @@ function App() {
   const filterProducts = (term, category, subcategory) => {
     const filtered = products.filter((product) => {
       const matchesSearch =
-        product?.part_number?.toLowerCase().includes(term) ||
-        product?.long_description?.toLowerCase().includes(term);
+        product?.model_number?.toLowerCase().includes(term) ||
+        product?.description?.toLowerCase().includes(term);
       const matchesCategory = category ? product?.category === category : true;
       const matchesSubcategory = subcategory
         ? product?.subcategory === subcategory
@@ -136,9 +136,9 @@ function App() {
         >
           {filteredProducts.map((product) => (
             <ProductCard
-              key={product.part_number}
-              part_number={product.part_number}
-              long_description={product.long_description}
+              key={product.model_number}
+              model_number={product.model_number}
+              description={product.description}
               category={product.category}
               image_path={product.image_path}
               datasheet_path={product.datasheet_path}
