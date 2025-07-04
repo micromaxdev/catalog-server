@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import FilterDropdown from "./FilterDropdown";
-import { TextField, Box, Typography } from "@mui/material";
+import { TextField } from "@mui/material";
+import "./App.css";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -11,7 +12,6 @@ function App() {
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Extract unique categories and subcategories
   const categories = [
     ...new Set(products.map((product) => product.category).filter(Boolean)),
   ];
@@ -70,85 +70,129 @@ function App() {
   };
 
   return (
-    <Box
-      sx={{
-        padding: "2rem",
-        fontFamily: "Arial, sans-serif",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Typography variant="h4" component="h1" sx={{ mb: 3 }}>
-        Product Catalog
-      </Typography>
+    <div className="app-container">
+      {/* Header Section */}
+      <div className="header-section">
+        <div className="header-content">
+          <h1 className="main-title">Product Catalog</h1>
+          <p className="subtitle">
+            Comprehensive technology solutions and components for your business
+            needs
+          </p>
+          <div className="company-tagline">
+            Professional Grade • Reliable • Innovative
+          </div>
+        </div>
+      </div>
 
-      <Box
-        sx={{
-          marginBottom: "2rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          maxWidth: "400px",
-        }}
-      >
-        <TextField
-          fullWidth
-          placeholder="Search by part number or description..."
-          value={searchTerm}
-          onChange={handleSearch}
-          variant="outlined"
-        />
+      {/* Stats Bar */}
+      <div className="stats-bar">
+        <div className="stats-item">
+          <span className="stats-number">{products.length}</span>
+          <span className="stats-label">Total Products</span>
+        </div>
+        <div className="stats-item">
+          <span className="stats-number">{categories.length}</span>
+          <span className="stats-label">Categories</span>
+        </div>
+        <div className="stats-item">
+          <span className="stats-number">{filteredProducts.length}</span>
+          <span className="stats-label">Results Found</span>
+        </div>
+        <div className="stats-item">
+          <span className="stats-number">24/7</span>
+          <span className="stats-label">Support</span>
+        </div>
+      </div>
 
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Box sx={{ flex: 1 }}>
-            <FilterDropdown
-              label="Category"
-              options={categories}
-              value={selectedCategory}
-              onChange={handleCategoryChange}
-              placeholder="Select category..."
-            />
-          </Box>
-          <Box sx={{ flex: 1 }}>
-            <FilterDropdown
-              label="Subcategory"
-              options={subcategories}
-              value={selectedSubcategory}
-              onChange={handleSubcategoryChange}
-              placeholder="Select subcategory..."
-              disabled={!selectedCategory}
-            />
-          </Box>
-        </Box>
-      </Box>
+      {/* Search Section */}
+      <div className="search-section">
+        <div className="search-container">
+          <h2 className="search-title">Find Your Product</h2>
 
-      {loading ? (
-        <Typography>Loading...</Typography>
-      ) : (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "1rem",
-            flex: 1,
-          }}
-        >
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.model_number}
-              model_number={product.model_number}
-              description={product.description}
-              category={product.category}
-              image_path={product.image_path}
-              datasheet_path={product.datasheet_path}
-              last_modified={product.last_modified}
-              data_hash={product.data_hash}
-            />
-          ))}
-        </Box>
-      )}
-    </Box>
+          <div className="search-controls">
+            <div className="search-input-wrapper">
+              <TextField
+                fullWidth
+                placeholder="Search by model number, description, or specifications..."
+                value={searchTerm}
+                onChange={handleSearch}
+                variant="outlined"
+                size="large"
+              />
+            </div>
+
+            <div className="filter-controls">
+              <div className="filter-item">
+                <FilterDropdown
+                  label="Product Category"
+                  options={categories}
+                  value={selectedCategory}
+                  onChange={handleCategoryChange}
+                  placeholder="All Categories"
+                />
+              </div>
+              <div className="filter-item">
+                <FilterDropdown
+                  label="Subcategory"
+                  options={subcategories}
+                  value={selectedSubcategory}
+                  onChange={handleSubcategoryChange}
+                  placeholder="All Subcategories"
+                  disabled={!selectedCategory}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Products Section */}
+      <div className="products-section">
+        <div className="products-header">
+          <h2 className="products-title">Product Listings</h2>
+          <div className="products-count">
+            {filteredProducts.length} Products
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading product catalog...</p>
+          </div>
+        ) : (
+          <div className="products-grid">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.model_number}
+                  model_number={product.model_number}
+                  description={product.description}
+                  category={product.category}
+                  image_path={product.image_path}
+                  datasheet_path={product.datasheet_path}
+                  last_modified={product.last_modified}
+                  data_hash={product.data_hash}
+                />
+              ))
+            ) : (
+              <div className="empty-state">
+                <div className="empty-icon">🔍</div>
+                <h3>No Products Found</h3>
+                <p>
+                  We couldn't find any products matching your search criteria.
+                </p>
+                <p>
+                  Try adjusting your search terms or filters to find what you're
+                  looking for.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
