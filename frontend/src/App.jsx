@@ -74,7 +74,7 @@ function App() {
       {/* Header Section */}
       <div className="header-section">
         <div className="header-content">
-          <h1 className="main-title">Product Catalog</h1>
+          <h1 className="main-title">Micromax Product Catalogue</h1>
           <p className="subtitle">
             Comprehensive technology solutions and components for your business
             needs
