@@ -25,4 +25,4 @@ jobs:
           yarn build
 
           # Restart the application
-          pm2 reload server.js --name catalog-server
+          pm2 start server.js --name catalog-server
