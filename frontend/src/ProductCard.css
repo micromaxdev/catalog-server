@@ -43,6 +43,7 @@
   justify-content: center;
   position: relative;
   border-right: 1px solid #e2e8f0;
+  overflow: hidden;
 }
 
 .product-image {
@@ -57,6 +58,29 @@
   transform: scale(1.02);
 }
 
+.product-image.loading {
+  opacity: 0;
+}
+
+.product-image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+.product-image-loading .loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 .product-image-placeholder {
   display: flex;
   align-items: center;
@@ -69,12 +93,19 @@
   font-weight: 500;
   flex-direction: column;
   gap: 0.5rem;
+  text-align: center;
+  padding: 1rem;
 }
 
-.product-image-placeholder::before {
-  content: '📦';
+.placeholder-icon {
   font-size: 3rem;
   opacity: 0.7;
+}
+
+.product-image-placeholder small {
+  font-size: 0.75rem;
+  color: #1e40af;
+  font-weight: 400;
 }
 
 /* Product Info Section */
@@ -149,6 +180,17 @@
   border: 1px solid #bee3f8;
 }
 
+.spec-source {
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid #bfdbfe;
+}
+
 .spec-date {
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   font-size: 0.875rem;
@@ -191,12 +233,63 @@
   text-decoration: none;
   flex: 1;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(26, 54, 93, 0.3);
   background: linear-gradient(135deg, #153e5e 0%, #2c5282 100%);
+  text-decoration: none;
+  color: white;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Disabled state for when no datasheet is available */
+.btn-disabled {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%) !important;
+  color: #64748b !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  border: 1px solid #cbd5e0;
+}
+
+.btn-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* File type specific styling */
+.btn-primary.datasheet-pdf {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+}
+
+.btn-primary.datasheet-pdf:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+}
+
+.btn-primary.datasheet-doc,
+.btn-primary.datasheet-docx {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+}
+
+.btn-primary.datasheet-doc:hover,
+.btn-primary.datasheet-docx:hover {
+  background: linear-gradient(135deg, #134e4a 0%, #0f766e 100%);
+}
+
+.btn-primary.datasheet-xls,
+.btn-primary.datasheet-xlsx {
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+}
+
+.btn-primary.datasheet-xls:hover,
+.btn-primary.datasheet-xlsx:hover {
+  background: linear-gradient(135deg, #075985 0%, #0369a1 100%);
 }
 
 .btn-secondary {
@@ -235,7 +328,7 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: #38a169;
+  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 50px;
@@ -243,14 +336,24 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(49, 130, 206, 0.3);
 }
 
 .product-status.out-of-stock {
-  background: #e53e3e;
+  background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+  box-shadow: 0 2px 4px rgba(113, 128, 150, 0.3);
 }
 
 .product-status.discontinued {
-  background: #dd6b20;
+  background: linear-gradient(135deg, #f56500 0%, #dd6b20 100%);
+  box-shadow: 0 2px 4px rgba(245, 101, 0, 0.3);
+}
+
+/* Loading animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Responsive Design */

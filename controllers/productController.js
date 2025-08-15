@@ -22,20 +22,22 @@ export const getAllProducts = async (req, res) => {
       replacements.description = `%${description}%`;
     }
 
-    // First, let's get all available columns and data
+    // Get all products with S3 URLs
     const [results] = await sequelize.query(
       `SELECT * FROM product ${whereClause} LIMIT 100`,
       { replacements }
     );
 
-    // Transform the results to ensure all expected fields exist
+    // Transform the results to match frontend expectations
     const transformedResults = results.map((product) => ({
       model_number: product.model_number || "Unknown",
       description: product.description || "No description available",
       category: product.category || "General",
       subcategory: product.subcategory || null,
-      image_path: product.image_path || null,
-      datasheet_path: product.datasheet_path || null,
+      brand: product.brand || null,
+      // Map database columns to frontend expectations
+      image_path: product.images || null,
+      datasheet_path: product.datasheets || null,
       data_hash:
         product.data_hash || Math.random().toString(36).substring(2, 15),
       last_modified:
@@ -44,6 +46,24 @@ export const getAllProducts = async (req, res) => {
         product.created_at ||
         new Date().toISOString(),
     }));
+
+    console.log(`Found ${transformedResults.length} products`);
+
+    // Log sample of products with images/datasheets for debugging
+    const productsWithAssets = transformedResults.filter(
+      (p) => p.image_path || p.datasheet_path
+    );
+    if (productsWithAssets.length > 0) {
+      console.log(`Products with assets: ${productsWithAssets.length}`);
+      console.log("Sample product with assets:", {
+        model: productsWithAssets[0].model_number,
+        hasImage: !!productsWithAssets[0].image_path,
+        hasDatasheet: !!productsWithAssets[0].datasheet_path,
+        imageUrl: productsWithAssets[0].image_path?.substring(0, 50) + "...",
+        datasheetUrl:
+          productsWithAssets[0].datasheet_path?.substring(0, 50) + "...",
+      });
+    }
 
     res.status(200).json(transformedResults);
   } catch (err) {

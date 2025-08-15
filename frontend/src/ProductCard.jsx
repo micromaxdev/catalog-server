@@ -11,6 +11,7 @@ const ProductCard = ({
   data_hash,
 }) => {
   const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -28,23 +29,75 @@ const ProductCard = ({
   };
 
   const getStatusColor = () => {
-    // This could be based on actual product data
-    return "available"; // available, out-of-stock, discontinued
+    return "available";
   };
+
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoading(false);
+    console.log(`Failed to load image: ${image_path}`);
+  };
+
+  const getFileExtension = (path) => {
+    if (!path) return "";
+    const extension = path.split(".").pop();
+    return extension ? extension.toUpperCase() : "";
+  };
+
+  const getFileName = (path) => {
+    if (!path) return "File";
+    const fileName = path.split("/").pop();
+    return fileName || "File";
+  };
+
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Check if we have valid URLs
+  const hasValidImage = image_path && isValidUrl(image_path);
+  const hasValidDatasheet = datasheet_path && isValidUrl(datasheet_path);
 
   return (
     <div className="product-card">
       <div className="product-image-container">
         <div className={`product-status ${getStatusColor()}`}>Available</div>
-        {image_path && !imageError ? (
-          <img
-            src={image_path}
-            alt={`${model_number} - ${description}`}
-            className="product-image"
-            onError={() => setImageError(true)}
-          />
+
+        {hasValidImage && !imageError ? (
+          <>
+            {imageLoading && (
+              <div className="product-image-loading">
+                <div className="loading-spinner"></div>
+                <span>Loading image...</span>
+              </div>
+            )}
+            <img
+              src={image_path}
+              alt={`${model_number} - ${description}`}
+              className={`product-image ${imageLoading ? "loading" : ""}`}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+              style={{ display: imageLoading ? "none" : "block" }}
+              crossOrigin="anonymous"
+            />
+          </>
         ) : (
-          <div className="product-image-placeholder">No Image Available</div>
+          <div className="product-image-placeholder">
+            <div className="placeholder-icon">📦</div>
+            <span>No Image Available</span>
+            {image_path && !isValidUrl(image_path) && (
+              <small>Invalid URL format</small>
+            )}
+          </div>
         )}
       </div>
 
@@ -80,12 +133,14 @@ const ProductCard = ({
         </div>
 
         <div className="product-actions">
-          {datasheet_path && (
+          {hasValidDatasheet ? (
             <a
               href={datasheet_path}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary"
+              className={`btn-primary datasheet-${getFileExtension(
+                datasheet_path
+              ).toLowerCase()}`}
               aria-label={`Download datasheet for ${model_number}`}
             >
               <svg className="btn-icon" fill="currentColor" viewBox="0 0 20 20">
@@ -95,9 +150,22 @@ const ProductCard = ({
                   clipRule="evenodd"
                 />
               </svg>
-              Datasheet
+              Download Datasheet
             </a>
+          ) : (
+            <div className="btn-primary btn-disabled">
+              <svg className="btn-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path
+                  fillRule="evenodd"
+                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              No Datasheet
+            </div>
           )}
+
           <button
             className="btn-secondary"
             aria-label={`View details for ${model_number}`}
