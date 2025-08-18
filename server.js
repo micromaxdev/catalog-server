@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import productRoutes from "./routes/productRoutes.js";
 
 const app = express();
+
 const PORT = 6000;
 
 // Connect to the database
