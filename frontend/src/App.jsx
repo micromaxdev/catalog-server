@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import FilterDropdown from "./FilterDropdown";
 import { TextField } from "@mui/material";
+import { ViewList } from "@mui/icons-material";
+import { ViewModule } from "@mui/icons-material";
 import "./App.css";
 
 function App() {
@@ -11,6 +13,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState("list");
 
   const categories = [
     ...new Set(products.map((product) => product.category).filter(Boolean)),
@@ -151,8 +154,26 @@ function App() {
       <div className="products-section">
         <div className="products-header">
           <h2 className="products-title">Product Listings</h2>
-          <div className="products-count">
-            {filteredProducts.length} Products
+          <div className="products-controls">
+            <div className="view-toggle">
+              <button
+                className={`view-btn ${viewMode === "list" ? "active" : ""}`}
+                onClick={() => setViewMode("list")}
+                aria-label="List view"
+              >
+                <ViewList />
+              </button>
+              <button
+                className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
+                onClick={() => setViewMode("grid")}
+                aria-label="Grid view"
+              >
+                <ViewModule />
+              </button>
+            </div>
+            <div className="products-count">
+              {filteredProducts.length} Products
+            </div>
           </div>
         </div>
 
@@ -162,7 +183,7 @@ function App() {
             <p>Loading product catalog...</p>
           </div>
         ) : (
-          <div className="products-grid">
+          <div className={`products-grid ${viewMode}`}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
                 <ProductCard
@@ -170,10 +191,12 @@ function App() {
                   model_number={product.model_number}
                   description={product.description}
                   category={product.category}
+                  brand={product.brand}
                   image_path={product.image_path}
                   datasheet_path={product.datasheet_path}
                   last_modified={product.last_modified}
                   data_hash={product.data_hash}
+                  viewMode={viewMode}
                 />
               ))
             ) : (

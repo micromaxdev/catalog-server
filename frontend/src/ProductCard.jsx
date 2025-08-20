@@ -5,10 +5,12 @@ const ProductCard = ({
   model_number,
   description,
   category,
+  brand,
   image_path,
   datasheet_path,
   last_modified,
   data_hash,
+  viewMode = "list",
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -68,7 +70,7 @@ const ProductCard = ({
   const hasValidDatasheet = datasheet_path && isValidUrl(datasheet_path);
 
   return (
-    <div className="product-card">
+    <div className={`product-card ${viewMode}`}>
       <div className="product-image-container">
         <div className={`product-status ${getStatusColor()}`}>Available</div>
 
@@ -111,9 +113,9 @@ const ProductCard = ({
 
         <div className="product-specs">
           <div className="spec-item">
-            <span className="spec-label">Category</span>
+            <span className="spec-label">Brand</span>
             <span className="spec-value spec-category">
-              {category || "General"}
+              {brand || "Unknown"}
             </span>
           </div>
 
@@ -121,13 +123,6 @@ const ProductCard = ({
             <span className="spec-label">Last Updated</span>
             <span className="spec-value spec-date">
               {formatDate(last_modified)}
-            </span>
-          </div>
-
-          <div className="spec-item">
-            <span className="spec-label">Product ID</span>
-            <span className="spec-value spec-hash">
-              {formatHash(data_hash)}
             </span>
           </div>
         </div>
@@ -165,21 +160,6 @@ const ProductCard = ({
               No Datasheet
             </div>
           )}
-
-          <button
-            className="btn-secondary"
-            aria-label={`View details for ${model_number}`}
-          >
-            <svg className="btn-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-              <path
-                fillRule="evenodd"
-                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-            View Details
-          </button>
         </div>
       </div>
     </div>

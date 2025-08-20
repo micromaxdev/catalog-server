@@ -218,6 +218,54 @@ body {
   border-bottom: 2px solid var(--gray-200);
 }
 
+.products-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.view-toggle {
+  display: flex;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid var(--gray-200);
+  overflow: hidden;
+}
+
+.view-btn {
+  background: white;
+  border: none;
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: var(--gray-600);
+  min-width: 44px;
+}
+
+.view-btn:hover {
+  background: var(--gray-50);
+  color: var(--primary-blue);
+  transform: none;
+  box-shadow: none;
+}
+
+.view-btn.active {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.view-btn.active:hover {
+  background: var(--secondary-blue);
+}
+
+.view-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
 .products-title {
   font-size: 1.75rem;
   font-weight: 600;
@@ -238,6 +286,12 @@ body {
   display: grid;
   gap: 1.5rem;
   grid-template-columns: 1fr;
+}
+
+.products-grid.grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
 }
 
 /* Loading and Empty States */
@@ -316,6 +370,16 @@ body {
     align-items: flex-start;
     gap: 1rem;
   }
+
+  .products-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .products-grid.grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -329,6 +393,20 @@ body {
   
   .stats-number {
     font-size: 1.5rem;
+  }
+
+  .products-grid.grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .view-toggle {
+    order: 2;
+  }
+
+  .products-count {
+    order: 1;
+    font-size: 0.8rem;
   }
 }
 
