@@ -13,7 +13,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState("list");
+  const [viewMode, setViewMode] = useState("grid");
 
   const categories = [
     ...new Set(products.map((product) => product.category).filter(Boolean)),
