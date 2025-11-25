@@ -34,8 +34,8 @@ export const getAllProducts = async (req, res) => {
       subcategory: product.subcategory || null,
       brand: product.brand || null,
       // Map database columns to frontend expectations
-      image_path: product.images || null,
-      datasheet_path: product.datasheets || null,
+      image_path: product.images || product.image || null,
+      datasheet_path: product.documents || product.document || null,
       data_hash:
         product.data_hash || Math.random().toString(36).substring(2, 15),
       last_modified:
