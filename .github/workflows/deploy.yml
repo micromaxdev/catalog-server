@@ -24,7 +24,7 @@ jobs:
           git pull origin main
 
           # Install dependencies and build
-          yarn install --frozen-lockfile
+          yarn install
           yarn build
 
           # Restart the application
