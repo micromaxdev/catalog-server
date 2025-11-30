@@ -30,10 +30,6 @@ const ProductCard = ({
     return hash.substring(0, 8) + "...";
   };
 
-  // const getStatusColor = () => {
-  //   return "available";
-  // };
-
   const handleImageLoad = () => {
     setImageLoading(false);
   };
@@ -72,8 +68,6 @@ const ProductCard = ({
   return (
     <div className={`product-card ${viewMode}`}>
       <div className="product-image-container">
-        {/* <div className={`product-status ${getStatusColor()}`}>Available</div> */}
-
         {hasValidImage && !imageError ? (
           <>
             {imageLoading && (
