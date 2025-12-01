@@ -31,7 +31,7 @@ export const getAllProducts = async (req, res) => {
       model_number: product.model_number || "Unknown",
       description: product.description || "No description available",
       category: product.category || "General",
-      subcategory: product.subcategory || null,
+      subcategory: product.sub_category || null,
       brand: product.brand || null,
       // Map database columns to frontend expectations
       image_path: product.images || null,
