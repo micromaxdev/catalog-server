@@ -636,3 +636,39 @@
     padding: 0.2rem 0.6rem;
   }
 }
+
+/* Zoom popup */
+.image-zoom-popup {
+  position: fixed;
+  width: 420px;
+  height: 420px;
+  background: white;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  z-index: 999999;
+  pointer-events: none;
+  border: 1px solid #e2e8f0;
+}
+
+.image-zoom-popup img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+
+/* Slight pop animation */
+@keyframes zoomIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
