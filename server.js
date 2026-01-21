@@ -6,7 +6,7 @@ import productRoutes from "./routes/productRoutes.js";
 
 const app = express();
 
-const PORT = 5173;
+const PORT = 8000;
 
 // Connect to the database
 dbConnection();

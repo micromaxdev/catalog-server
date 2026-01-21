@@ -14,6 +14,39 @@ const ProductCard = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Parse multiple images from image_path
+  const parseImages = (imagePath) => {
+    if (!imagePath) return [];
+    
+    // If it's already an array, return it
+    if (Array.isArray(imagePath)) return imagePath;
+    
+    // Try parsing as JSON array
+    try {
+      const parsed = JSON.parse(imagePath);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      // Not JSON, continue to other formats
+    }
+    
+    // Try comma-separated string
+    if (typeof imagePath === 'string' && imagePath.includes(',')) {
+      return imagePath.split(',').map(url => url.trim()).filter(Boolean);
+    }
+    
+    // Single image as string
+    if (typeof imagePath === 'string' && imagePath.trim()) {
+      return [imagePath.trim()];
+    }
+    
+    return [];
+  };
+
+  const images = parseImages(image_path);
+  const currentImage = images[currentImageIndex] || null;
+  const hasMultipleImages = images.length > 1;
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -37,7 +70,27 @@ const ProductCard = ({
   const handleImageError = () => {
     setImageError(true);
     setImageLoading(false);
-    console.log(`Failed to load image: ${image_path}`);
+    console.log(`Failed to load image: ${currentImage}`);
+  };
+
+  const handlePrevImage = (e) => {
+    e.stopPropagation();
+    setImageLoading(true);
+    setImageError(false);
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e) => {
+    e.stopPropagation();
+    setImageLoading(true);
+    setImageError(false);
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleDotClick = (index) => {
+    setImageLoading(true);
+    setImageError(false);
+    setCurrentImageIndex(index);
   };
 
   const getFileExtension = (path) => {
@@ -62,7 +115,7 @@ const ProductCard = ({
   };
 
   // Check if we have valid URLs
-  const hasValidImage = image_path && isValidUrl(image_path);
+  const hasValidImage = currentImage && isValidUrl(currentImage);
   const hasValidDatasheet = datasheet_path && isValidUrl(datasheet_path);
 
   return (
@@ -76,15 +129,49 @@ const ProductCard = ({
                 <span>Loading image...</span>
               </div>
             )}
-            <img
-              src={image_path}
-              alt={`${model_number} - ${description}`}
-              className={`product-image ${imageLoading ? "loading" : ""}`}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-              style={{ display: imageLoading ? "none" : "block" }}
-              crossOrigin="anonymous"
-            />
+            <div className="image-wrapper">
+              <img
+                src={currentImage}
+                alt={`${model_number} - ${description}`}
+                className={`product-image ${imageLoading ? "loading" : ""}`}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                style={{ display: imageLoading ? "none" : "block" }}
+                crossOrigin="anonymous"
+              />
+            </div>
+            
+            {hasMultipleImages && !imageLoading && (
+              <>
+                <button 
+                  className="image-nav-btn prev" 
+                  onClick={handlePrevImage}
+                  aria-label="Previous image"
+                >
+                  ‹
+                </button>
+                <button 
+                  className="image-nav-btn next" 
+                  onClick={handleNextImage}
+                  aria-label="Next image"
+                >
+                  ›
+                </button>
+                <div className="image-indicators">
+                  {images.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`image-dot ${index === currentImageIndex ? 'active' : ''}`}
+                      onClick={() => handleDotClick(index)}
+                      aria-label={`Go to image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                <div className="image-counter">
+                  {currentImageIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
           </>
         ) : (
           <div className="product-image-placeholder">

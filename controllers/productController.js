@@ -8,45 +8,92 @@ export const getAllProducts = async (req, res) => {
     const replacements = {};
 
     if (model_number) {
-      whereClause += " AND model_number LIKE :model_number";
+      whereClause += " AND p.model_number LIKE :model_number";
       replacements.model_number = `%${model_number}%`;
     }
 
     if (category) {
-      whereClause += " AND category LIKE :category";
+      whereClause += " AND p.category LIKE :category";
       replacements.category = `%${category}%`;
     }
 
     if (description) {
-      whereClause += " AND description LIKE :description";
+      whereClause += " AND p.description LIKE :description";
       replacements.description = `%${description}%`;
     }
 
-    const [results] = await sequelize.query(`SELECT * FROM product`, {
+    // Increase GROUP_CONCAT limit to handle multiple long URLs
+    await sequelize.query("SET SESSION group_concat_max_len = 1000000");
+
+    // Query to get products with aggregated images
+    const query = `
+      SELECT 
+        p.*,
+        GROUP_CONCAT(
+          CONCAT(
+            '{"url":"', i.s3_url, 
+            '","is_primary":', i.is_primary, 
+            ',"display_order":', i.display_order, 
+            ',"file_name":"', i.file_name, '"}'
+          )
+          ORDER BY i.is_primary DESC, i.display_order ASC
+          SEPARATOR '|||'
+        ) as image_data
+      FROM product p
+      LEFT JOIN product_image i ON p.model_number = i.model_number
+      ${whereClause}
+      GROUP BY p.id, p.model_number
+      ORDER BY p.model_number
+    `;
+
+    const [results] = await sequelize.query(query, {
       replacements,
     });
 
-    // Transform the results to match frontend expectations
-    const transformedResults = results.map((product) => ({
-      model_number: product.model_number || "Unknown",
-      description: product.description || "No description available",
-      category: product.category || "General",
-      subcategory: product.sub_category || null,
-      brand: product.brand || null,
-      // Map database columns to frontend expectations
-      image_path: product.images || null,
-      datasheet_path: product.documents || null,
-      data_hash:
-        product.data_hash || Math.random().toString(36).substring(2, 15),
-      last_modified:
-        product.last_modified ||
-        product.updated_at ||
-        product.created_at ||
-        new Date().toISOString(),
-    }));
+    // Transform the results
+    const transformedResults = results.map((product) => {
+      // Parse aggregated image data
+      let images = [];
+      if (product.image_data) {
+        try {
+          const imageStrings = product.image_data.split("|||");
+          images = imageStrings
+            .map((str) => {
+              try {
+                return JSON.parse(str);
+              } catch (e) {
+                return null;
+              }
+            })
+            .filter(Boolean)
+            .map((img) => img.url);
+        } catch (e) {
+          console.error("Error parsing image data:", e);
+        }
+      }
+
+      return {
+        model_number: product.model_number || "Unknown",
+        description: product.description || "No description available",
+        category: product.category || "General",
+        subcategory: product.sub_category || null,
+        brand: product.brand || null,
+        // Return as JSON array string for frontend
+        image_path: images.length > 0 ? JSON.stringify(images) : null,
+        datasheet_path: product.documents || null,
+        data_hash:
+          product.data_hash || Math.random().toString(36).substring(2, 15),
+        last_modified:
+          product.last_modified ||
+          product.updated_at ||
+          product.created_at ||
+          new Date().toISOString(),
+      };
+    });
 
     res.status(200).json(transformedResults);
   } catch (err) {
+    console.error("Error fetching products:", err);
     res.status(500).json({ error: err.message });
   }
 };

@@ -126,16 +126,18 @@
   overflow: hidden;
 }
 
+.image-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
 .product-image {
   width: 100%;
   height: 100%;
   object-fit: contain;
   padding: 1rem;
-  transition: transform 0.3s ease;
-}
-
-.product-card:hover .product-image {
-  transform: scale(1.02);
+  transition: opacity 0.3s ease;
 }
 
 .product-image.loading {
@@ -186,6 +188,88 @@
   font-size: 0.75rem;
   color: #1e40af;
   font-weight: 400;
+}
+
+/* Image Carousel Navigation */
+.image-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a365d;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.image-nav-btn:hover {
+  background: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.image-nav-btn.prev {
+  left: 0.5rem;
+}
+
+.image-nav-btn.next {
+  right: 0.5rem;
+}
+
+.image-indicators {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 2;
+}
+
+.image-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.image-dot:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: scale(1.2);
+}
+
+.image-dot.active {
+  background: white;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.image-counter {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(26, 54, 93, 0.85);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 2;
+  backdrop-filter: blur(4px);
 }
 
 /* Product Info Section */
@@ -457,8 +541,13 @@
 
 /* Loading animation */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive Design */
@@ -466,7 +555,7 @@
   .product-card {
     flex-direction: column;
   }
-  
+
   .product-image-container {
     width: 100%;
     min-width: unset;
@@ -474,11 +563,11 @@
     border-right: none;
     border-bottom: 1px solid #e2e8f0;
   }
-  
+
   .product-info {
     min-height: unset;
   }
-  
+
   .product-specs {
     grid-template-columns: 1fr;
   }
@@ -502,15 +591,15 @@
   .product-info {
     padding: 1.5rem;
   }
-  
+
   .product-model {
     font-size: 1.25rem;
   }
-  
+
   .product-actions {
     flex-direction: column;
   }
-  
+
   .btn-primary {
     flex: none;
   }
@@ -534,5 +623,16 @@
 
   .product-card.grid .product-actions {
     display: block;
+  }
+
+  .image-nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
+
+  .image-counter {
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.6rem;
   }
 }
