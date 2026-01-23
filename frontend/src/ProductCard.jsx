@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./ProductCard.css";
 
 const ProductCard = ({
@@ -16,10 +16,11 @@ const ProductCard = ({
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // ✅ Zoom popup state
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
+  const imageRef = useRef(null);
+  const containerRef = useRef(null);
 
   // Parse multiple images from image_path
   const parseImages = (imagePath) => {
@@ -67,31 +68,72 @@ const ProductCard = ({
   const handleImageError = () => {
     setImageError(true);
     setImageLoading(false);
-    console.log(`Failed to load image: ${currentImage}`);
   };
 
   const handlePrevImage = (e) => {
     e.stopPropagation();
     setImageLoading(true);
     setImageError(false);
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? images.length - 1 : prev - 1
-    );
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   const handleNextImage = (e) => {
     e.stopPropagation();
     setImageLoading(true);
     setImageError(false);
-    setCurrentImageIndex((prev) =>
-      prev === images.length - 1 ? 0 : prev + 1
-    );
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
   const handleDotClick = (index) => {
     setImageLoading(true);
     setImageError(false);
     setCurrentImageIndex(index);
+  };
+
+  const handleMouseEnter = () => {
+    if (hasValidImage && !imageLoading && !imageError) {
+      setShowZoom(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setShowZoom(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!imageRef.current || !containerRef.current || !showZoom) return;
+
+    const image = imageRef.current;
+    const imageRect = image.getBoundingClientRect();
+
+    // Calculate mouse position relative to the actual visible image
+    const mouseX = e.clientX - imageRect.left;
+    const mouseY = e.clientY - imageRect.top;
+
+    // Calculate percentage position
+    const xPercent = (mouseX / imageRect.width) * 100;
+    const yPercent = (mouseY / imageRect.height) * 100;
+
+    // Update lens position relative to container
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const lensX = e.clientX - containerRect.left;
+    const lensY = e.clientY - containerRect.top;
+    setLensPosition({ x: lensX, y: lensY });
+
+    // Set zoom popup position
+    const popupX = e.clientX + 20;
+    const popupY = e.clientY - 200;
+
+    // Adjust if popup would go off screen
+    const adjustedX = popupX + 420 > window.innerWidth ? e.clientX - 440 : popupX;
+    const adjustedY = popupY < 0 ? 20 : popupY;
+
+    setZoomPosition({
+      x: adjustedX,
+      y: adjustedY,
+      xPercent,
+      yPercent
+    });
   };
 
   const isValidUrl = (string) => {
@@ -106,29 +148,15 @@ const ProductCard = ({
   const hasValidImage = currentImage && isValidUrl(currentImage);
   const hasValidDatasheet = datasheet_path && isValidUrl(datasheet_path);
 
-  // ✅ Zoom handlers
-  const handleMouseEnter = () => {
-    console.log("🟢 Mouse entered image");
-    setShowZoom(true);
-  };
-
-  const handleMouseLeave = () => {
-    console.log("🔴 Mouse left image");
-    setShowZoom(false);
-  };
-
-  const handleMouseMove = (e) => {
-    console.log("🟡 Mouse moving on image", e.clientX, e.clientY);
-    setZoomPosition({
-      x: e.clientX + 20,
-      y: e.clientY + 20,
-    });
-  };
-
-
   return (
     <div className={`product-card ${viewMode}`}>
-      <div className="product-image-container">
+      <div
+        className="product-image-container"
+        ref={containerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onMouseMove={handleMouseMove}
+      >
         {hasValidImage && !imageError ? (
           <>
             {imageLoading && (
@@ -138,14 +166,9 @@ const ProductCard = ({
               </div>
             )}
 
-            <div
-              className="image-wrapper"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              onMouseMove={handleMouseMove}
-              style={{ border: "2px solid red" }}
-            >
+            <div className="image-wrapper">
               <img
+                ref={imageRef}
                 src={currentImage}
                 alt={`${model_number} - ${description}`}
                 className={`product-image ${imageLoading ? "loading" : ""}`}
@@ -154,23 +177,39 @@ const ProductCard = ({
                 style={{ display: imageLoading ? "none" : "block" }}
                 crossOrigin="anonymous"
               />
+
+              {showZoom && !imageLoading && (
+                <div
+                  className="zoom-lens"
+                  style={{
+                    left: `${lensPosition.x - 50}px`,
+                    top: `${lensPosition.y - 50}px`,
+                  }}
+                />
+              )}
             </div>
 
-            {showZoom && hasValidImage &&
+            {showZoom && !imageLoading &&
               createPortal(
                 <div
                   className="image-zoom-popup"
                   style={{
-                    top: zoomPosition.y,
-                    left: zoomPosition.x,
+                    top: `${zoomPosition.y}px`,
+                    left: `${zoomPosition.x}px`,
                   }}
                 >
-                  <img src={currentImage} alt="Zoom preview" />
+                  <div
+                    className="zoom-image-wrapper"
+                    style={{
+                      backgroundImage: `url(${currentImage})`,
+                      backgroundSize: '250%',
+                      backgroundPosition: `${zoomPosition.xPercent}% ${zoomPosition.yPercent}%`,
+                      backgroundRepeat: 'no-repeat'
+                    }}
+                  />
                 </div>,
                 document.body
-              )
-            }
-
+              )}
 
             {hasMultipleImages && !imageLoading && (
               <>
