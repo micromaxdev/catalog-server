@@ -128,8 +128,6 @@ const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        "@import":
-          "url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap')",
         body: {
           backgroundColor: "#f7fafc",
           scrollBehavior: "smooth",
