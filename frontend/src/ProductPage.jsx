@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowBack } from "@mui/icons-material";
-import { Download } from "@mui/icons-material";
+import { ArrowBack, Download, Description, PictureAsPdf, ExpandMore } from "@mui/icons-material";
+import { Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
 import "./ProductPage.css";
 
 const ProductPage = () => {
     const { model_number } = useParams();
     const navigate = useNavigate();
     const [product, setProduct] = useState(null);
+    const [documents, setDocuments] = useState([]);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [imageError, setImageError] = useState(false);
     const [imageLoading, setImageLoading] = useState(true);
+    const [downloadsExpanded, setDownloadsExpanded] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -24,7 +26,14 @@ const ProductPage = () => {
                     const productData = data[0];
                     setProduct(productData);
 
-                    // Fetch related products (same category)
+                    try {
+                        const docsResponse = await fetch(`/api/products/${model_number}/documents`);
+                        const docsData = await docsResponse.json();
+                        setDocuments(docsData.documents_by_type || []);
+                    } catch (err) {
+                        console.error("Error fetching documents:", err);
+                    }
+
                     if (productData.category) {
                         const relatedResponse = await fetch(`/api/products?category=${productData.category}`);
                         const relatedData = await relatedResponse.json();
@@ -74,6 +83,15 @@ const ProductPage = () => {
         });
     };
 
+    const formatFileSize = (bytes) => {
+        if (!bytes) return "N/A";
+        const mb = bytes / (1024 * 1024);
+        if (mb < 1) {
+            return `${(bytes / 1024).toFixed(1)} KB`;
+        }
+        return `${mb.toFixed(2)} MB`;
+    };
+
     const isValidUrl = (string) => {
         try {
             new URL(string);
@@ -82,6 +100,13 @@ const ProductPage = () => {
             return false;
         }
     };
+
+    const getDocumentsByType = (typeId) => {
+        return documents.find(d => d.type_id === typeId);
+    };
+
+    const keyFeatures = getDocumentsByType(7);
+    const specifications = getDocumentsByType(10);
 
     if (loading) {
         return (
@@ -107,20 +132,16 @@ const ProductPage = () => {
     const images = parseImages(product.image_path);
     const currentImage = images[currentImageIndex] || null;
     const hasValidImage = currentImage && isValidUrl(currentImage);
-    const hasValidDatasheet = product.datasheet_path && isValidUrl(product.datasheet_path);
 
     return (
         <div className="product-page">
-            {/* Header */}
             <div className="product-page-header">
                 <button onClick={() => navigate("/")} className="back-btn">
                     <ArrowBack /> Back to Catalog
                 </button>
             </div>
 
-            {/* Main Content */}
             <div className="product-page-content">
-                {/* Left Column - Images */}
                 <div className="product-page-gallery">
                     <div className="gallery-main">
                         {hasValidImage && !imageError ? (
@@ -167,56 +188,166 @@ const ProductPage = () => {
                             ))}
                         </div>
                     )}
-                </div>
 
-                {/* Right Column - Details */}
-                <div className="product-page-details">
+                    {/* Product Title & Model Below Gallery */}
                     <div className="details-header">
                         <h1>{product.description || "No description available"}</h1>
                         <p className="model-number">Model: {product.model_number}</p>
                     </div>
+                </div>
 
-                    <div className="details-section">
-                        <h3>Product Information</h3>
-                        <div className="info-grid">
-                            <div className="info-item">
-                                <span className="info-label">Brand</span>
-                                <span className="info-value">{product.brand || "Unknown"}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="info-label">Category</span>
-                                <span className="info-value">{product.category || "General"}</span>
-                            </div>
-                            {product.subcategory && (
-                                <div className="info-item">
-                                    <span className="info-label">Subcategory</span>
-                                    <span className="info-value">{product.subcategory}</span>
+                <div className="product-page-details">
+                    {/* Key Features Section */}
+                    {keyFeatures && keyFeatures.documents && keyFeatures.documents.length > 0 && (
+                        <div className="details-section key-features-section">
+                            <h3>📋 Key Features</h3>
+                            {keyFeatures.formatted_sections ? (
+                                <div className="extracted-content">
+                                    {keyFeatures.formatted_sections.map((section, idx) => (
+                                        <div key={idx} className="content-section">
+                                            {section.title && <h4 className="section-title">{section.title}</h4>}
+                                            <div className="section-content">
+                                                {section.content.map((paragraph, pIdx) => (
+                                                    <p key={pIdx}>{paragraph}</p>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="document-list">
+                                    {keyFeatures.documents.map((doc) => (
+                                        <div key={doc.id} className="document-item">
+                                            <div className="document-icon">
+                                                <PictureAsPdf />
+                                            </div>
+                                            <div className="document-info">
+                                                <span className="document-name">{doc.file_name}</span>
+                                                <span className="document-size">{formatFileSize(doc.file_size)}</span>
+                                            </div>
+                                            <a
+                                                href={doc.s3_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="document-download-btn"
+                                            >
+                                                <Download />
+                                            </a>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
-                            <div className="info-item">
-                                <span className="info-label">Last Updated</span>
-                                <span className="info-value">{formatDate(product.last_modified)}</span>
-                            </div>
                         </div>
-                    </div>
+                    )}
+                </div>
+            </div>
 
-                    <div className="details-section">
-                        <h3>Downloads</h3>
-                        {hasValidDatasheet ? (
-                            <a
-                                href={product.datasheet_path}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="download-btn"
-                            >
-                                <Download /> Download Datasheet
-                            </a>
+            {/* Specifications Section - Below Image Gallery */}
+            {specifications && specifications.documents && specifications.documents.length > 0 && (
+                <div className="specifications-full-width">
+                    <div className="specifications-container">
+                        <h2>📊 Technical Specifications</h2>
+                        {specifications.formatted_sections ? (
+                            <div className="specifications-grid">
+                                {specifications.formatted_sections.map((section, idx) => (
+                                    <div key={idx} className="specification-column">
+                                        {section.title && <h3 className="spec-column-title">{section.title}</h3>}
+                                        <div className="spec-column-content">
+                                            {section.content.map((paragraph, pIdx) => (
+                                                <p key={pIdx}>{paragraph}</p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         ) : (
-                            <p className="no-datasheet">No datasheet available for this product.</p>
+                            <div className="document-list">
+                                {specifications.documents.map((doc) => (
+                                    <div key={doc.id} className="document-item">
+                                        <div className="document-icon">
+                                            <PictureAsPdf />
+                                        </div>
+                                        <div className="document-info">
+                                            <span className="document-name">{doc.file_name}</span>
+                                            <span className="document-size">{formatFileSize(doc.file_size)}</span>
+                                        </div>
+                                        <a
+                                            href={doc.s3_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="document-download-btn"
+                                        >
+                                            <Download />
+                                        </a>
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </div>
                 </div>
-            </div>
+            )}
+
+            {/* Downloads Section - Single Accordion */}
+            {documents.length > 0 && (
+                <div className="downloads-section">
+                    <h2>📥 Downloads & Documentation</h2>
+                    <Accordion
+                        expanded={downloadsExpanded}
+                        onChange={() => setDownloadsExpanded(!downloadsExpanded)}
+                        className="downloads-single-accordion"
+                    >
+                        <AccordionSummary
+                            expandIcon={<ExpandMore />}
+                            className="download-accordion-header"
+                        >
+                            <div className="accordion-header-content">
+                                <Description className="accordion-icon" />
+                                <div className="accordion-title">
+                                    <Typography variant="h6">All Documents</Typography>
+                                    <Typography variant="caption" className="document-count">
+                                        {documents.reduce((total, docType) => total + docType.documents.length, 0)} files available
+                                    </Typography>
+                                </div>
+                            </div>
+                        </AccordionSummary>
+                        <AccordionDetails className="download-accordion-content">
+                            <div className="downloads-grouped-list">
+                                {documents.map((docType) => (
+                                    <div key={docType.type_id} className="download-group">
+                                        <h4 className="download-group-title">
+                                            {docType.type_name} ({docType.documents.length})
+                                        </h4>
+                                        <div className="download-files-list">
+                                            {docType.documents.map((doc) => (
+                                                <a
+                                                    key={doc.id}
+                                                    href={doc.s3_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="download-file-item"
+                                                >
+                                                    <div className="download-file-icon">
+                                                        <PictureAsPdf />
+                                                    </div>
+                                                    <div className="download-file-info">
+                                                        <span className="download-file-name">{doc.file_name}</span>
+                                                        <span className="download-file-meta">
+                                                            {formatFileSize(doc.file_size)} • {formatDate(doc.created_at)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="download-file-action">
+                                                        <Download />
+                                                    </div>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </AccordionDetails>
+                    </Accordion>
+                </div>
+            )}
 
             {/* Related Products */}
             {relatedProducts.length > 0 && (

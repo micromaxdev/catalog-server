@@ -22,10 +22,8 @@ export const getAllProducts = async (req, res) => {
       replacements.description = `%${description}%`;
     }
 
-    // Increase GROUP_CONCAT limit to handle multiple long URLs
     await sequelize.query("SET SESSION group_concat_max_len = 1000000");
 
-    // Query to get products with aggregated images
     const query = `
       SELECT 
         p.*,
@@ -50,9 +48,7 @@ export const getAllProducts = async (req, res) => {
       replacements,
     });
 
-    // Transform the results
     const transformedResults = results.map((product) => {
-      // Parse aggregated image data
       let images = [];
       if (product.image_data) {
         try {
@@ -78,7 +74,6 @@ export const getAllProducts = async (req, res) => {
         category: product.category || "General",
         subcategory: product.sub_category || null,
         brand: product.brand || null,
-        // Return as JSON array string for frontend
         image_path: images.length > 0 ? JSON.stringify(images) : null,
         datasheet_path: product.documents || null,
         data_hash:
