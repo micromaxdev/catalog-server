@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import FilterDropdown from "./FilterDropdown";
+import ProductPage from "./ProductPage";
 import { TextField } from "@mui/material";
 import { ViewList } from "@mui/icons-material";
 import { ViewModule } from "@mui/icons-material";
 import "./App.css";
 
-function App() {
+function CatalogPage() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -216,6 +218,17 @@ function App() {
         )}
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<CatalogPage />} />
+        <Route path="/product/:model_number" element={<ProductPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
