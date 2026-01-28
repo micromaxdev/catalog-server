@@ -3,6 +3,7 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import productRoutes from "./routes/productRoutes.js";
+import documentRoutes from "./routes/documentRoutes.js";
 
 const app = express();
 
@@ -14,8 +15,9 @@ dbConnection();
 // Enable JSON parsing
 app.use(express.json());
 
-// Mount product routes
+// Mount routes
 app.use("/api", productRoutes);
+app.use("/api", documentRoutes);
 
 // Serve React frontend in production
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
