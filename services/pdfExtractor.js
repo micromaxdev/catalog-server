@@ -98,7 +98,6 @@ export const formatExtractedText = (text) => {
     }];
   }
 
-  // For specs without bullets: Split by repeated domain patterns (like www.onyx-healthcare.com)
   const domainPattern = /(www\.[a-zA-Z0-9-]+\.com\s+\d{4}\s+\d{2}\s+\d{2})/g;
   const hasDomains = domainPattern.test(cleaned);
   
