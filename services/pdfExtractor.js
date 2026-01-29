@@ -1,12 +1,11 @@
 import fetch from "node-fetch";
+import PDFParser from "pdf2json";
 
 /**
- * Extract text from PDF using pdf-parse v2.4.5
- * Correct API: new PDFParse(uint8Array).getText()
+ * Extract text from PDF using pdf2json
  */
 export const extractTextFromPDF = async (pdfUrl) => {
   try {
-    // Fetch PDF from S3
     console.log(`Fetching PDF from: ${pdfUrl}`);
     const response = await fetch(pdfUrl, { timeout: 30000 });
     
@@ -18,37 +17,52 @@ export const extractTextFromPDF = async (pdfUrl) => {
     const buffer = Buffer.from(arrayBuffer);
     
     console.log(`PDF downloaded, size: ${buffer.length} bytes`);
+    console.log("Extracting text with pdf2json...");
     
-    // Import pdf-parse v2.4.5
-    console.log("Loading pdf-parse...");
-    const pdfModule = await import("pdf-parse");
-    const PDFParse = pdfModule.PDFParse;
+    const pdfParser = new PDFParser();
     
-    if (!PDFParse) {
-      throw new Error("PDFParse class not found");
-    }
-    
-    // Convert Buffer to Uint8Array (required by pdf-parse v2.4.5)
-    const uint8Array = new Uint8Array(buffer);
-    
-    // Create parser instance
-    console.log("Creating PDFParse instance...");
-    const pdfParser = new PDFParse(uint8Array);
-    
-    // Extract text using getText() method
-    console.log("Extracting text...");
-    const result = await pdfParser.getText();
-    
-    console.log(`PDF parsed successfully: ${result.total} pages, ${result.text.length} characters`);
-    
-    return {
-      success: true,
-      text: result.text,
-      pages: result.total,
-      info: {},
-    };
+    return new Promise((resolve) => {
+      pdfParser.on("pdfParser_dataReady", (pdfData) => {
+        try {
+          let fullText = "";
+          
+          pdfData.Pages.forEach((page) => {
+            page.Texts.forEach((text) => {
+              const decodedText = decodeURIComponent(text.R[0].T);
+              fullText += decodedText + " ";
+            });
+            fullText += "\n";
+          });
+          
+          console.log(`✅ PDF parsed successfully: ${pdfData.Pages.length} pages, ${fullText.length} characters`);
+          
+          resolve({
+            success: true,
+            text: fullText.trim(),
+            pages: pdfData.Pages.length,
+            info: {},
+          });
+        } catch (error) {
+          console.error("❌ Error processing PDF data:", error.message);
+          resolve({
+            success: false,
+            error: error.message,
+          });
+        }
+      });
+      
+      pdfParser.on("pdfParser_dataError", (error) => {
+        console.error("❌ Error parsing PDF:", error.parserError);
+        resolve({
+          success: false,
+          error: error.parserError,
+        });
+      });
+      
+      pdfParser.parseBuffer(buffer);
+    });
   } catch (error) {
-    console.error("Error extracting PDF text:", error.message);
+    console.error("❌ Error extracting PDF text:", error.message);
     
     return {
       success: false,
@@ -63,49 +77,66 @@ export const extractTextFromPDF = async (pdfUrl) => {
 export const formatExtractedText = (text) => {
   if (!text) return [];
 
-  // Remove excessive whitespace and newlines
-  let formatted = text
-    .replace(/\n{3,}/g, "\n\n")
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
+  // Clean up the text
+  let cleaned = text.replace(/\s+/g, " ").trim();
 
-  // Split into sections based on headers
-  const sections = [];
-  const lines = formatted.split("\n");
-  let currentSection = { title: "", content: [] };
+  // Check for bullet points (for Key Features)
+  const bulletPattern = /[•●○▪▫■□]/g;
+  const hasBullets = bulletPattern.test(cleaned);
 
-  lines.forEach((line) => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
-
-    // Detect headers (all caps, short, ends with colon)
-    const isHeader =
-      trimmed.length < 60 &&
-      trimmed.length > 2 &&
-      (trimmed === trimmed.toUpperCase() || trimmed.endsWith(":"));
-
-    if (isHeader) {
-      // Save previous section if it has content
-      if (currentSection.content.length > 0) {
-        sections.push({ ...currentSection });
-      }
-      // Start new section
-      currentSection = {
-        title: trimmed.replace(/:$/, ""),
-        content: [],
-      };
-    } else {
-      currentSection.content.push(trimmed);
-    }
-  });
-
-  // Add final section
-  if (currentSection.content.length > 0) {
-    sections.push(currentSection);
+  if (hasBullets) {
+    // Split by bullet points
+    const items = cleaned.split(bulletPattern);
+    
+    const bulletItems = items
+      .map(item => item.trim())
+      .filter(item => item.length > 10);
+    
+    return [{
+      title: "",
+      content: bulletItems,
+    }];
   }
 
-  // If no sections found, return all as one section
-  return sections.length > 0
-    ? sections
-    : [{ title: "", content: [formatted] }];
+  // For specs without bullets: Split by repeated domain patterns (like www.onyx-healthcare.com)
+  const domainPattern = /(www\.[a-zA-Z0-9-]+\.com\s+\d{4}\s+\d{2}\s+\d{2})/g;
+  const hasDomains = domainPattern.test(cleaned);
+  
+  if (hasDomains) {
+    // Split by domain + date pattern
+    const parts = cleaned.split(domainPattern);
+    const sections = [];
+    
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i].trim();
+      
+      // Skip empty parts and the domain separator itself
+      if (!part || domainPattern.test(part)) continue;
+      
+      // Each part becomes a section
+      if (part.length > 50) {
+        // Try to extract a title from the first line
+        const sentences = part.split(/[.!?]\s+/);
+        const firstSentence = sentences[0];
+        
+        // If first sentence is short, use it as title
+        if (firstSentence && firstSentence.length < 100 && firstSentence.length > 10) {
+          sections.push({
+            title: "",
+            content: [part],
+          });
+        } else {
+          sections.push({
+            title: "",
+            content: [part],
+          });
+        }
+      }
+    }
+    
+    return sections.length > 0 ? sections : [{ title: "", content: [cleaned] }];
+  }
+
+  // Fallback: Return as single section
+  return [{ title: "", content: [cleaned] }];
 };
