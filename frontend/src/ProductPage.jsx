@@ -29,6 +29,9 @@ const ProductPage = () => {
                     try {
                         const docsResponse = await fetch(`/api/products/${model_number}/documents`);
                         const docsData = await docsResponse.json();
+                        console.log('📦 Documents API Response:', docsData);
+                        console.log('📋 Type 7 (Key Features):', docsData.documents_by_type?.find(d => d.type_id === 7));
+                        console.log('📊 Type 10 (Specifications):', docsData.documents_by_type?.find(d => d.type_id === 10));
                         setDocuments(docsData.documents_by_type || []);
                     } catch (err) {
                         console.error("Error fetching documents:", err);
@@ -107,6 +110,12 @@ const ProductPage = () => {
 
     const keyFeatures = getDocumentsByType(7);
     const specifications = getDocumentsByType(10);
+
+    // Debug logging
+    console.log('🔍 keyFeatures:', keyFeatures);
+    console.log('🔍 keyFeatures.formatted_sections:', keyFeatures?.formatted_sections);
+    console.log('🔍 specifications:', specifications);
+    console.log('🔍 specifications.formatted_sections:', specifications?.formatted_sections);
 
     if (loading) {
         return (
@@ -201,7 +210,7 @@ const ProductPage = () => {
                     {keyFeatures && keyFeatures.documents && keyFeatures.documents.length > 0 && (
                         <div className="details-section key-features-section">
                             <h3>📋 Key Features</h3>
-                            {keyFeatures.formatted_sections ? (
+                            {keyFeatures.formatted_sections && keyFeatures.formatted_sections.length > 0 ? (
                                 <div className="extracted-content">
                                     {keyFeatures.formatted_sections.map((section, idx) => (
                                         <div key={idx} className="content-section">
@@ -247,7 +256,7 @@ const ProductPage = () => {
                 <div className="specifications-full-width">
                     <div className="specifications-container">
                         <h2>📊 Technical Specifications</h2>
-                        {specifications.formatted_sections ? (
+                        {specifications.formatted_sections && specifications.formatted_sections.length > 0 ? (
                             <div className="specifications-grid">
                                 {specifications.formatted_sections.map((section, idx) => (
                                     <div key={idx} className="specification-column">
