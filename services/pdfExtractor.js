@@ -72,70 +72,64 @@ export const extractTextFromPDF = async (pdfUrl) => {
 };
 
 /**
- * Format extracted text into readable sections
+ * Format extracted text into readable sections (columns for specs)
  */
 export const formatExtractedText = (text) => {
-  if (!text) return [];
-
-  // Clean up the text
-  let cleaned = text.replace(/\s+/g, " ").trim();
-
-  // Check for bullet points (for Key Features)
-  const bulletPattern = /[•●○▪▫■□]/g;
-  const hasBullets = bulletPattern.test(cleaned);
-
-  if (hasBullets) {
-    // Split by bullet points
-    const items = cleaned.split(bulletPattern);
-    
-    const bulletItems = items
-      .map(item => item.trim())
-      .filter(item => item.length > 10);
-    
-    return [{
-      title: "",
-      content: bulletItems,
-    }];
-  }
-
-  const domainPattern = /(www\.[a-zA-Z0-9-]+\.com\s+\d{4}\s+\d{2}\s+\d{2})/g;
-  const hasDomains = domainPattern.test(cleaned);
+    if (!text) return [];
   
-  if (hasDomains) {
-    // Split by domain + date pattern
-    const parts = cleaned.split(domainPattern);
-    const sections = [];
+    // Clean up the text
+    let cleaned = text.replace(/\s+/g, " ").trim();
+  
+    // Check for bullet points (for Key Features)
+    const bulletPattern = /[•●○▪▫■□]/g;
+    const hasBullets = bulletPattern.test(cleaned);
+  
+    if (hasBullets) {
+      // Split by bullet points for Key Features
+      const items = cleaned.split(bulletPattern);
+      
+      const bulletItems = items
+        .map(item => item.trim())
+        .filter(item => item.length > 10);
+      
+      return [{
+        title: "",
+        content: bulletItems,
+      }];
+    }
+  
+    // For Technical Specifications: Split by OPM product codes
+    // Pattern: "Vehicle Dock OPM-T016-A3" or "VESA Cradle OPM-T021-A1"
+    const productPattern = /((?:Vehicle Dock|Office Dock|VESA Cradle|Battery Charger|Desk Stand|Battery Pack)\s+[A-Z0-9-]+)/gi;
     
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i].trim();
+    if (productPattern.test(cleaned)) {
+      const sections = [];
+      const parts = cleaned.split(productPattern);
       
-      // Skip empty parts and the domain separator itself
-      if (!part || domainPattern.test(part)) continue;
+      let currentTitle = "";
       
-      // Each part becomes a section
-      if (part.length > 50) {
-        // Try to extract a title from the first line
-        const sentences = part.split(/[.!?]\s+/);
-        const firstSentence = sentences[0];
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i].trim();
+        if (!part) continue;
         
-        // If first sentence is short, use it as title
-        if (firstSentence && firstSentence.length < 100 && firstSentence.length > 10) {
+        // Check if this part matches a product name
+        const isProductName = /^(Vehicle Dock|Office Dock|VESA Cradle|Battery Charger|Desk Stand|Battery Pack)\s+[A-Z0-9-]+$/i.test(part);
+        
+        if (isProductName) {
+          currentTitle = part;
+        } else if (part.length > 50 && currentTitle) {
+          // This is content for the current product
           sections.push({
-            title: "",
+            title: currentTitle,
             content: [part],
           });
-        } else {
-          sections.push({
-            title: "",
-            content: [part],
-          });
+          currentTitle = ""; // Reset
         }
       }
+      
+      return sections.length > 0 ? sections : [{ title: "", content: [cleaned] }];
     }
-    
-    return sections.length > 0 ? sections : [{ title: "", content: [cleaned] }];
-  }
-
-  // Fallback: Return as single section
-  return [{ title: "", content: [cleaned] }];
-};
+  
+    // Fallback: Return as single section
+    return [{ title: "", content: [cleaned] }];
+  };

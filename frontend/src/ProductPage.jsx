@@ -116,6 +116,17 @@ const ProductPage = () => {
     console.log('🔍 keyFeatures.formatted_sections:', keyFeatures?.formatted_sections);
     console.log('🔍 specifications:', specifications);
     console.log('🔍 specifications.formatted_sections:', specifications?.formatted_sections);
+    console.log('🔍 specifications.extracted_text:', specifications?.extracted_text);
+    if (specifications?.formatted_sections) {
+        console.log('📊 Number of sections:', specifications.formatted_sections.length);
+        specifications.formatted_sections.forEach((section, idx) => {
+            console.log(`Section ${idx}:`, {
+                title: section.title,
+                contentLength: section.content.length,
+                firstContent: section.content[0]?.substring(0, 100)
+            });
+        });
+    }
 
     if (loading) {
         return (
