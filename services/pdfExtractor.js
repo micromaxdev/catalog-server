@@ -72,7 +72,7 @@ export const extractTextFromPDF = async (pdfUrl) => {
 };
 
 /**
- * Format extracted text into readable sections (columns for specs)
+ * Format extracted text into readable sections
  */
 export const formatExtractedText = (text) => {
     if (!text) return [];
@@ -80,7 +80,7 @@ export const formatExtractedText = (text) => {
     // Clean up the text
     let cleaned = text.replace(/\s+/g, " ").trim();
   
-    // Check for bullet points (for Key Features)
+    // Check for bullet points
     const bulletPattern = /[•●○▪▫■□]/g;
     const hasBullets = bulletPattern.test(cleaned);
   
