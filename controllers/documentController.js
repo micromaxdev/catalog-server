@@ -1,5 +1,5 @@
 import { sequelize } from "../db/db.js";
-import { extractTextFromPDF, formatExtractedText } from "../services/pdfExtractor.js";
+import { formatExtractedText } from "../services/pdfFormatter.js";
 
 // Get all documents for a product
 export const getProductDocuments = async (req, res) => {
@@ -10,18 +10,20 @@ export const getProductDocuments = async (req, res) => {
       SELECT 
         pd.*,
         dt.type_name,
-        dt.prefix
+        dt.prefix,
+        dt.slug,
+        dt.display_format,
+        dt.sort_order
       FROM product_document pd
       LEFT JOIN document_type dt ON pd.document_type_id = dt.id
       WHERE pd.model_number = :model_number
-      ORDER BY pd.document_type_id ASC, pd.created_at DESC
+      ORDER BY dt.sort_order ASC, pd.document_type_id ASC, pd.created_at DESC
     `;
 
     const [documents] = await sequelize.query(query, {
       replacements: { model_number },
     });
 
-    // Group documents by type
     const groupedDocuments = documents.reduce((acc, doc) => {
       const typeId = doc.document_type_id;
       if (!acc[typeId]) {
@@ -29,9 +31,13 @@ export const getProductDocuments = async (req, res) => {
           type_id: typeId,
           type_name: doc.type_name || `Type ${typeId}`,
           prefix: doc.prefix || `0${typeId}`,
+          slug: doc.slug || null,
+          display_format: doc.display_format || "bullets",
+          sort_order: doc.sort_order || 0,
           documents: [],
         };
       }
+
       acc[typeId].documents.push({
         id: doc.id,
         file_name: doc.file_name,
@@ -40,36 +46,22 @@ export const getProductDocuments = async (req, res) => {
         mime_type: doc.mime_type,
         created_at: doc.created_at,
       });
+
+      // Format extracted text from first document
+      if (acc[typeId].documents.length === 1 && doc.extracted_text) {
+        acc[typeId].extracted_text = doc.extracted_text;
+        acc[typeId].formatted_sections = formatExtractedText(
+          doc.extracted_text
+        );
+      }
+
       return acc;
     }, {});
-
-    // Extract text from Key Features (7) and Specifications (10)
-    const documentsByType = Object.values(groupedDocuments);
-    
-    for (const docType of documentsByType) {
-      if (docType.type_id === 7 || docType.type_id === 10) {
-        // Extract text from first document of each type
-        if (docType.documents.length > 0) {
-          const firstDoc = docType.documents[0];
-          try {
-            const extraction = await extractTextFromPDF(firstDoc.s3_url);
-            
-            if (extraction.success) {
-              docType.extracted_text = extraction.text;
-              docType.formatted_sections = formatExtractedText(extraction.text);
-              docType.page_count = extraction.pages;
-            }
-          } catch (err) {
-            console.error(`Error extracting text from ${firstDoc.file_name}:`, err);
-          }
-        }
-      }
-    }
 
     res.status(200).json({
       model_number,
       total_documents: documents.length,
-      documents_by_type: documentsByType,
+      documents_by_type: Object.values(groupedDocuments),
     });
   } catch (err) {
     console.error("Error fetching product documents:", err);
