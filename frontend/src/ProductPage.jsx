@@ -30,8 +30,6 @@ const ProductPage = () => {
                         const docsResponse = await fetch(`/api/products/${model_number}/documents`);
                         const docsData = await docsResponse.json();
                         console.log('📦 Documents API Response:', docsData);
-                        console.log('📋 Type 7 (Key Features):', docsData.documents_by_type?.find(d => d.type_id === 7));
-                        console.log('📊 Type 10 (Specifications):', docsData.documents_by_type?.find(d => d.type_id === 10));
                         setDocuments(docsData.documents_by_type || []);
                     } catch (err) {
                         console.error("Error fetching documents:", err);
@@ -104,29 +102,18 @@ const ProductPage = () => {
         }
     };
 
-    const getDocumentsByType = (typeId) => {
-        return documents.find(d => d.type_id === typeId);
+    // Find documents by slug (database-driven)
+    const findDocumentBySlug = (slug) => {
+        return documents.find(d => d.slug === slug);
     };
 
-    const keyFeatures = getDocumentsByType(7);
-    const specifications = getDocumentsByType(10);
+    const keyFeatures = findDocumentBySlug('key-features');
+    const specifications = findDocumentBySlug('specifications');
 
     // Debug logging
-    console.log('🔍 keyFeatures:', keyFeatures);
-    console.log('🔍 keyFeatures.formatted_sections:', keyFeatures?.formatted_sections);
-    console.log('🔍 specifications:', specifications);
-    console.log('🔍 specifications.formatted_sections:', specifications?.formatted_sections);
-    console.log('🔍 specifications.extracted_text:', specifications?.extracted_text);
-    if (specifications?.formatted_sections) {
-        console.log('📊 Number of sections:', specifications.formatted_sections.length);
-        specifications.formatted_sections.forEach((section, idx) => {
-            console.log(`Section ${idx}:`, {
-                title: section.title,
-                contentLength: section.content.length,
-                firstContent: section.content[0]?.substring(0, 100)
-            });
-        });
-    }
+    console.log('📦 Documents loaded:', documents.length, 'types');
+    console.log('✅ Key Features:', keyFeatures ? 'Found' : 'Not found');
+    console.log('✅ Specifications:', specifications ? 'Found' : 'Not found');
 
     if (loading) {
         return (
@@ -209,7 +196,6 @@ const ProductPage = () => {
                         </div>
                     )}
 
-                    {/* Product Title & Model Below Gallery */}
                     <div className="details-header">
                         <h1>{product.description || "No description available"}</h1>
                         <p className="model-number">Model: {product.model_number}</p>
@@ -220,7 +206,7 @@ const ProductPage = () => {
                     {/* Key Features Section */}
                     {keyFeatures && keyFeatures.documents && keyFeatures.documents.length > 0 && (
                         <div className="details-section key-features-section">
-                            <h3>📋 Key Features</h3>
+                            <h3>📋 {keyFeatures.type_name}</h3>
                             {keyFeatures.formatted_sections && keyFeatures.formatted_sections.length > 0 ? (
                                 <div className="extracted-content">
                                     {keyFeatures.formatted_sections.map((section, idx) => (
@@ -262,11 +248,11 @@ const ProductPage = () => {
                 </div>
             </div>
 
-            {/* Specifications Section - Below Image Gallery */}
+            {/* Specifications Section */}
             {specifications && specifications.documents && specifications.documents.length > 0 && (
                 <div className="specifications-full-width">
                     <div className="specifications-container">
-                        <h2>📊 Technical Specifications</h2>
+                        <h2>📊 {specifications.type_name}</h2>
                         {specifications.formatted_sections && specifications.formatted_sections.length > 0 ? (
                             <div className="specifications-grid">
                                 {specifications.formatted_sections.map((section, idx) => (
