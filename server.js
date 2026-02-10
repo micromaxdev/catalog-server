@@ -7,7 +7,7 @@ import documentRoutes from "./routes/documentRoutes.js";
 
 const app = express();
 
-const PORT = 4000;
+const PORT = 5173;
 
 // Connect to the database
 dbConnection();
