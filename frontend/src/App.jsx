@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Link, Routes, Route } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import FilterDropdown from "./FilterDropdown";
 import ProductPage from "./ProductPage";
 import { TextField } from "@mui/material";
-import { ViewList } from "@mui/icons-material";
-import { ViewModule } from "@mui/icons-material";
+import { ViewList, ViewModule, ShoppingCart } from "@mui/icons-material";
+import { Badge } from "@mui/material";
+import { useCart } from "./CartContext";
 import "./App.css";
 
 function CatalogPage() {
@@ -16,6 +17,8 @@ function CatalogPage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("grid");
+
+  const { totalItems } = useCart();
 
   const categories = [
     ...new Set(products.map((product) => product.category).filter(Boolean)),
@@ -113,7 +116,14 @@ function CatalogPage() {
       {/* Search Section */}
       <div className="search-section">
         <div className="search-container">
-          <h2 className="search-title">Find Your Product</h2>
+          <div className="search-title-row">
+            <h2 className="search-title">Find Your Product</h2>
+            <Link to="/cart" className="cart-icon-link">
+              <Badge badgeContent={totalItems} color="error">
+                <ShoppingCart />
+              </Badge>
+            </Link>
+          </div>
 
           <div className="search-controls">
             <div className="search-input-wrapper">
@@ -198,6 +208,8 @@ function CatalogPage() {
                   datasheet_path={product.datasheet_path}
                   last_modified={product.last_modified}
                   data_hash={product.data_hash}
+                  price={product.price}
+                  is_quote_only={product.is_quote_only}
                   viewMode={viewMode}
                 />
               ))

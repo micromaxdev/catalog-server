@@ -149,12 +149,32 @@ body {
   margin: 0 auto;
 }
 
+.search-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
 .search-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--gray-800);
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   text-align: center;
+}
+
+.cart-icon-link {
+  position: absolute;
+  right: -8rem;
+  color: var(--accent-blue);
+  display: flex;
+  align-items: center;
+}
+
+.cart-icon-link svg {
+  font-size: 2.5rem;
 }
 
 .search-controls {

@@ -83,6 +83,9 @@ export const getAllProducts = async (req, res) => {
           product.updated_at ||
           product.created_at ||
           new Date().toISOString(),
+        price: product.price ? parseFloat(product.price) : null,
+        is_quote_only:
+          product.is_quote_only === 1 || product.is_quote_only === true,
       };
     });
 

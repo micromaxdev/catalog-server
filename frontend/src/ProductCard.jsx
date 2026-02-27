@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom";
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "./CartContext";
 import "./ProductCard.css";
 
 const ProductCard = ({
@@ -12,6 +13,8 @@ const ProductCard = ({
   datasheet_path,
   last_modified,
   data_hash,
+  price,
+  is_quote_only,
   viewMode = "list",
 }) => {
   const [imageError, setImageError] = useState(false);
@@ -22,28 +25,22 @@ const ProductCard = ({
   const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef(null);
   const containerRef = useRef(null);
+  const { addToCart } = useCart();
+  const [added, setAdded] = useState(false);
 
   const parseImages = (imagePath) => {
     if (!imagePath) return [];
-
     if (Array.isArray(imagePath)) return imagePath;
-
     try {
       const parsed = JSON.parse(imagePath);
       if (Array.isArray(parsed)) return parsed;
     } catch (e) { }
-
     if (typeof imagePath === "string" && imagePath.includes(",")) {
-      return imagePath
-        .split(",")
-        .map((url) => url.trim())
-        .filter(Boolean);
+      return imagePath.split(",").map((url) => url.trim()).filter(Boolean);
     }
-
     if (typeof imagePath === "string" && imagePath.trim()) {
       return [imagePath.trim()];
     }
-
     return [];
   };
 
@@ -61,9 +58,7 @@ const ProductCard = ({
     });
   };
 
-  const handleImageLoad = () => {
-    setImageLoading(false);
-  };
+  const handleImageLoad = () => setImageLoading(false);
 
   const handleImageError = () => {
     setImageError(true);
@@ -95,43 +90,32 @@ const ProductCard = ({
   };
 
   const handleMouseEnter = () => {
-    if (hasValidImage && !imageLoading && !imageError) {
-      setShowZoom(true);
-    }
+    if (hasValidImage && !imageLoading && !imageError) setShowZoom(true);
   };
 
-  const handleMouseLeave = () => {
-    setShowZoom(false);
-  };
+  const handleMouseLeave = () => setShowZoom(false);
 
   const handleMouseMove = (e) => {
     if (!imageRef.current || !containerRef.current || !showZoom) return;
 
     const image = imageRef.current;
     const imageRect = image.getBoundingClientRect();
-
-    const mouseX = e.clientX - imageRect.left;
-    const mouseY = e.clientY - imageRect.top;
-
-    const xPercent = (mouseX / imageRect.width) * 100;
-    const yPercent = (mouseY / imageRect.height) * 100;
+    const xPercent = ((e.clientX - imageRect.left) / imageRect.width) * 100;
+    const yPercent = ((e.clientY - imageRect.top) / imageRect.height) * 100;
 
     const containerRect = containerRef.current.getBoundingClientRect();
-    const lensX = e.clientX - containerRect.left;
-    const lensY = e.clientY - containerRect.top;
-    setLensPosition({ x: lensX, y: lensY });
+    setLensPosition({
+      x: e.clientX - containerRect.left,
+      y: e.clientY - containerRect.top,
+    });
 
     const popupX = e.clientX + 20;
     const popupY = e.clientY - 200;
-
-    const adjustedX = popupX + 420 > window.innerWidth ? e.clientX - 440 : popupX;
-    const adjustedY = popupY < 0 ? 20 : popupY;
-
     setZoomPosition({
-      x: adjustedX,
-      y: adjustedY,
+      x: popupX + 420 > window.innerWidth ? e.clientX - 440 : popupX,
+      y: popupY < 0 ? 20 : popupY,
       xPercent,
-      yPercent
+      yPercent,
     });
   };
 
@@ -145,7 +129,6 @@ const ProductCard = ({
   };
 
   const hasValidImage = currentImage && isValidUrl(currentImage);
-  const hasValidDatasheet = datasheet_path && isValidUrl(datasheet_path);
 
   return (
     <Link to={`/product/${model_number}`} className={`product-card ${viewMode}`}>
@@ -176,7 +159,6 @@ const ProductCard = ({
                 style={{ display: imageLoading ? "none" : "block" }}
                 crossOrigin="anonymous"
               />
-
               {showZoom && !imageLoading && (
                 <div
                   className="zoom-lens"
@@ -188,22 +170,20 @@ const ProductCard = ({
               )}
             </div>
 
-            {showZoom && !imageLoading &&
+            {showZoom &&
+              !imageLoading &&
               createPortal(
                 <div
                   className="image-zoom-popup"
-                  style={{
-                    top: `${zoomPosition.y}px`,
-                    left: `${zoomPosition.x}px`,
-                  }}
+                  style={{ top: `${zoomPosition.y}px`, left: `${zoomPosition.x}px` }}
                 >
                   <div
                     className="zoom-image-wrapper"
                     style={{
                       backgroundImage: `url(${currentImage})`,
-                      backgroundSize: '250%',
+                      backgroundSize: "250%",
                       backgroundPosition: `${zoomPosition.xPercent}% ${zoomPosition.yPercent}%`,
-                      backgroundRepeat: 'no-repeat'
+                      backgroundRepeat: "no-repeat",
                     }}
                   />
                 </div>,
@@ -212,24 +192,17 @@ const ProductCard = ({
 
             {hasMultipleImages && !imageLoading && (
               <>
-                <button className="image-nav-btn prev" onClick={handlePrevImage}>
-                  ‹
-                </button>
-                <button className="image-nav-btn next" onClick={handleNextImage}>
-                  ›
-                </button>
-
+                <button className="image-nav-btn prev" onClick={handlePrevImage}>‹</button>
+                <button className="image-nav-btn next" onClick={handleNextImage}>›</button>
                 <div className="image-indicators">
                   {images.map((_, index) => (
                     <button
                       key={index}
-                      className={`image-dot ${index === currentImageIndex ? "active" : ""
-                        }`}
+                      className={`image-dot ${index === currentImageIndex ? "active" : ""}`}
                       onClick={(e) => handleDotClick(e, index)}
                     />
                   ))}
                 </div>
-
                 <div className="image-counter">
                   {currentImageIndex + 1} / {images.length}
                 </div>
@@ -246,51 +219,42 @@ const ProductCard = ({
 
       <div className="product-info">
         <div className="product-header">
-          <h3 className="product-model">
-            {description || "No description available"}
-          </h3>
+          <h3 className="product-model">{description || "No description available"}</h3>
           <p className="product-description">Model: {model_number}</p>
         </div>
 
         <div className="product-specs">
           <div className="spec-item">
             <span className="spec-label">Brand</span>
-            <span className="spec-value spec-category">
-              {brand || "Unknown"}
-            </span>
+            <span className="spec-value spec-category">{brand || "Unknown"}</span>
           </div>
-
           <div className="spec-item">
             <span className="spec-label">Last Updated</span>
-            <span className="spec-value spec-date">
-              {formatDate(last_modified)}
-            </span>
+            <span className="spec-value spec-date">{formatDate(last_modified)}</span>
           </div>
         </div>
 
         <div className="product-actions">
-          {hasValidDatasheet ? (
+          {is_quote_only ? (
             <div
-              className="btn-primary"
+              className="btn-primary btn-contact-sales"
+              onClick={(e) => e.preventDefault()}
+            >
+              Contact Sales
+            </div>
+          ) : (
+            <button
+              className={`btn-primary ${added ? "btn-added" : ""}`}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                window.open(datasheet_path, '_blank', 'noopener,noreferrer');
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.open(datasheet_path, '_blank', 'noopener,noreferrer');
-                }
+                addToCart({ model_number, description, category, brand, image_path, price });
+                setAdded(true);
+                setTimeout(() => setAdded(false), 2000);
               }}
             >
-              Download Datasheet
-            </div>
-          ) : (
-            <div className="btn-primary btn-disabled">No Datasheet</div>
+              {added ? "Added to Cart" : "Add to Cart"}
+            </button>
           )}
         </div>
       </div>
