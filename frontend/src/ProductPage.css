@@ -794,12 +794,6 @@
        transition: all 0.2s ease;
    }
 
-   .btn.added {
-    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%) !important;
-    transform: none !important;
-    box-shadow: none !important;
-   }
-
    .btn-primary:hover {
        background: var(--secondary-blue);
        transform: translateY(-2px);
