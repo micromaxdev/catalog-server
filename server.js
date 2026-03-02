@@ -4,6 +4,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import productRoutes from "./routes/productRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
+import checkoutRoutes from "./routes/checkoutRoutes.js";
+import enquiryRoutes from "./routes/enquiryRoutes.js";
 
 const app = express();
 
@@ -18,6 +20,12 @@ app.use(express.json());
 // Mount routes
 app.use("/api", productRoutes);
 app.use("/api", documentRoutes);
+
+// Payment routes
+app.use("/api", checkoutRoutes);
+
+// Enquiry routes
+app.use("/api", enquiryRoutes);
 
 // Serve React frontend in production
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

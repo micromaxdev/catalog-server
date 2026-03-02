@@ -236,12 +236,18 @@ const ProductCard = ({
 
         <div className="product-actions">
           {is_quote_only ? (
-            <div
-              className="btn-primary btn-contact-sales"
-              onClick={(e) => e.preventDefault()}
+            <button
+              className={`btn-primary ${added ? "btn-add-to-quote" : ""}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addToCart({ model_number, description, category, brand, image_path, price, is_quote_only: true });
+                setAdded(true);
+                setTimeout(() => setAdded(false), 2000);
+              }}
             >
-              Contact Sales
-            </div>
+              {added ? "✓ Added to quote" : "Add to quote"}
+            </button>
           ) : (
             <button
               className={`btn-primary ${added ? "btn-added" : ""}`}
@@ -253,7 +259,7 @@ const ProductCard = ({
                 setTimeout(() => setAdded(false), 2000);
               }}
             >
-              {added ? "Added to Cart" : "Add to Cart"}
+              {added ? "✓ Added to Cart" : "Add to Cart"}
             </button>
           )}
         </div>

@@ -461,6 +461,12 @@
   box-shadow: none !important;
  }
 
+ .btn-add-to-quote {
+  background: linear-gradient(135deg, #d6791c 0%, #d69e2e 100%) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .product-card.grid .btn-primary {
   width: 100%;
   justify-content: center;

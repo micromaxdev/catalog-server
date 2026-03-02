@@ -1063,6 +1063,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stripe/stripe-js@npm:^8.8.0":
+  version: 8.8.0
+  resolution: "@stripe/stripe-js@npm:8.8.0"
+  checksum: 10c0/d1f13044ae35b0b52c2fedbf20038963645e1afaab20ae4addfa35b95daa0698020c5bf84b044950abe28ffa90c0cf626688e713ff7fe4ae0d99b489efb695bc
+  languageName: node
+  linkType: hard
+
 "@types/babel__core@npm:^7.20.5":
   version: 7.20.5
   resolution: "@types/babel__core@npm:7.20.5"
@@ -1827,6 +1834,7 @@ __metadata:
     "@eslint/js": "npm:^9.21.0"
     "@mui/icons-material": "npm:^7.0.2"
     "@mui/material": "npm:^7.0.2"
+    "@stripe/stripe-js": "npm:^8.8.0"
     "@types/react": "npm:^19.0.10"
     "@types/react-dom": "npm:^19.0.4"
     "@vitejs/plugin-react": "npm:^4.3.4"

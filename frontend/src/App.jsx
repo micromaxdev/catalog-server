@@ -8,6 +8,8 @@ import { ViewList, ViewModule, ShoppingCart } from "@mui/icons-material";
 import { Badge } from "@mui/material";
 import { useCart } from "./CartContext";
 import "./App.css";
+import CartPage from "./CartPage";
+import CheckoutSuccess from "./CheckoutSuccess";
 
 function CatalogPage() {
   const [products, setProducts] = useState([]);
@@ -239,6 +241,8 @@ function App() {
       <Routes>
         <Route path="/" element={<CatalogPage />} />
         <Route path="/product/:model_number" element={<ProductPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout/success" element={<CheckoutSuccess />} />
       </Routes>
     </BrowserRouter>
   );
