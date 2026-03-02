@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import { createStripeSession } from "../services/stripeService.js";
 
 dotenv.config();
 
@@ -70,24 +71,15 @@ export const sendEnquiry = async (req, res) => {
       });
     }
 
-    // Create Stripe session if priced items exist
+    // Create Stripe session via shared service if priced items exist
     let stripeUrl = null;
     if (hasPricedItems) {
-      const stripeResponse = await fetch(
-        `${process.env.CLIENT_URL}/api/checkout/session`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items: pricedItems }),
-        },
-      );
-      const stripeData = await stripeResponse.json();
-      stripeUrl = stripeData.url || null;
+      stripeUrl = await createStripeSession(pricedItems);
     }
 
     res.status(200).json({ success: true, stripeUrl });
   } catch (err) {
-    console.error("Enquiry email error:", err);
+    console.error("Enquiry error:", err);
     res.status(500).json({ error: err.message });
   }
 };
